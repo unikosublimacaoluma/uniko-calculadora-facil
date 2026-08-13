@@ -1,0 +1,25 @@
+{
+  "name": "UNIKO Calculadora Fácil",
+  "short_name": "UNIKO Calc",
+  "description": "Calculadora offline de taxas de cartão da UNIKO.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8fd",
+  "theme_color": "#6f2dbd",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
