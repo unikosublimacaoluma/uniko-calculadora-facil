@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6f2dbd">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="UNIKO Calculadora">
+  <title>UNIKO • Calculadora Fácil</title>
+  <meta name="description" content="Calculadora offline de taxas de cartão da UNIKO.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="offlineBanner" class="offline-banner hidden">Você está offline. A calculadora continua funcionando com as taxas salvas neste aparelho.</div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <div class="brand">UNIKO</div>
+        <div class="subtitle">Calculadora Fácil</div>
+      </div>
+      <div class="header-actions">
+        <button id="installBtn" class="icon-btn hidden" aria-label="Instalar aplicativo" title="Instalar aplicativo">⇩</button>
+        <button id="settingsBtn" class="icon-btn" aria-label="Configurações" title="Configurações">⚙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card input-card">
+      <label for="amountInput">Valor no Pix / Quero receber líquido</label>
+      <div class="money-input">
+        <span>R$</span>
+        <input id="amountInput" inputmode="numeric" autocomplete="off" placeholder="0,00" aria-label="Valor no Pix">
+      </div>
+      <button id="clearAmountBtn" class="text-btn hidden">Limpar valor</button>
+    </section>
+
+    <section class="card">
+      <div class="section-label">Forma de pagamento</div>
+      <div class="segmented" id="paymentMethods">
+        <button data-method="pix">Pix</button>
+        <button data-method="debit">Débito</button>
+        <button data-method="credit" class="active">Crédito</button>
+      </div>
+
+      <div id="installmentsArea">
+        <div class="section-label installments-label">Parcelas</div>
+        <div class="installments-grid" id="installmentsGrid"></div>
+      </div>
+    </section>
+
+    <section class="result-card">
+      <div class="result-hero">
+        <div class="result-label">Cobrar do cliente</div>
+        <div id="chargeValue" class="charge-value">R$ 0,00</div>
+        <div id="installmentLine" class="installment-line hidden"></div>
+      </div>
+
+      <div class="result-row">
+        <span>Taxa aplicada</span>
+        <strong id="rateValue">0,00%</strong>
+      </div>
+      <div class="result-row">
+        <span>Custo da taxa</span>
+        <strong id="feeValue">R$ 0,00</strong>
+      </div>
+      <div class="result-row">
+        <span>Você recebe</span>
+        <strong id="netValue">R$ 0,00</strong>
+      </div>
+    </section>
+
+    <div class="action-stack">
+      <button id="copyBtn" class="primary-btn" disabled>Copiar mensagem para o cliente</button>
+      <button id="whatsappBtn" class="secondary-btn" disabled>Enviar pelo WhatsApp</button>
+      <button id="saveHistoryBtn" class="secondary-btn" disabled>Salvar no histórico</button>
+      <div id="messagePreview" class="message-preview hidden"></div>
+    </div>
+
+    <section id="promoCard" class="card hidden">
+      <div class="promo-row">
+        <div>
+          <strong>Usar taxas promocionais</strong>
+          <p>Use somente se você configurou uma tabela promocional válida.</p>
+        </div>
+        <label class="switch">
+          <input id="promoSwitch" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card metadata-card">
+      <div><strong>Adquirente:</strong> SumUp Brasil</div>
+      <div><strong>Modo:</strong> <span id="modeLabel">taxas normais</span></div>
+      <div><strong>Taxas salvas neste aparelho:</strong> <span id="ratesUpdatedAt">—</span></div>
+      <div class="note">Nesta versão offline, as taxas não são atualizadas automaticamente. Você pode alterá-las em Configurações.</div>
+    </section>
+
+    <section class="card history-card">
+      <div class="history-header">
+        <h2>Últimos cálculos</h2>
+        <button id="clearHistoryBtn" class="text-btn">Limpar</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <p class="empty">Nenhum cálculo salvo.</p>
+      </div>
+    </section>
+
+    <section class="card install-help">
+      <strong>Instalar no celular</strong>
+      <p>Depois de hospedado em um endereço HTTPS, abra este app pelo navegador e escolha “Adicionar à tela inicial” ou use o botão de instalação quando aparecer.</p>
+    </section>
+  </main>
+
+  <dialog id="pinDialog" class="modal">
+    <form method="dialog" class="modal-card" id="pinForm">
+      <div class="modal-header">
+        <h2 id="pinTitle">Acesso às configurações</h2>
+        <button value="cancel" class="close-btn" aria-label="Fechar">×</button>
+      </div>
+      <p id="pinText">Digite seu PIN local.</p>
+      <input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="PIN de 4 a 8 números" autocomplete="off">
+      <div id="pinConfirmArea" class="hidden">
+        <input id="pinConfirmInput" type="password" inputmode="numeric" maxlength="8" placeholder="Confirme o PIN" autocomplete="off">
+      </div>
+      <div id="pinError" class="error-text hidden"></div>
+      <button id="pinSubmitBtn" value="default" class="primary-btn">Entrar</button>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog" class="modal wide">
+    <div class="modal-card settings-modal">
+      <div class="modal-header">
+        <div>
+          <h2>Configurações</h2>
+          <p>Taxas armazenadas somente neste aparelho.</p>
+        </div>
+        <button id="closeSettingsBtn" class="close-btn" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="settings-section">
+        <h3>Taxas normais</h3>
+        <div id="normalRatesEditor" class="rates-editor"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title-row">
+          <div>
+            <h3>Taxas promocionais</h3>
+            <p>Deixe desativado se não tiver uma tabela promocional confirmada.</p>
+          </div>
+          <label class="switch">
+            <input id="promoEnabledSetting" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="promoRatesEditor" class="rates-editor"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Backup</h3>
+        <div class="settings-buttons">
+          <button id="exportBtn" class="secondary-btn">Exportar configurações</button>
+          <label class="secondary-btn file-label">
+            Importar configurações
+            <input id="importInput" type="file" accept=".json,application/json">
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Segurança local</h3>
+        <div class="settings-buttons">
+          <button id="changePinBtn" class="secondary-btn">Alterar PIN</button>
+          <button id="resetRatesBtn" class="danger-btn">Restaurar taxas iniciais</button>
+        </div>
+        <p class="small-note">O PIN serve para evitar alterações acidentais no aparelho. Como este é um app offline estático, ele não substitui autenticação de servidor.</p>
+      </div>
+
+      <div class="settings-footer">
+        <button id="saveSettingsBtn" class="primary-btn">Salvar alterações</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
